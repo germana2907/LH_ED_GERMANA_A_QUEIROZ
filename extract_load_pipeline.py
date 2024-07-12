@@ -1,3 +1,4 @@
+from types import CodeType
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.python import PythonOperator
@@ -16,18 +17,18 @@ default_args = {
 }
 
 def extract_from_postgresql():
-    # Execute a extração dos dados do PostgreSQL usando Embulk 
+    # Execute a extração dos dados do PostgreSQL usando Embulk
     subprocess.run(['embulk', 'run', r'C:\Users\germana.a.queiroz\Challenge_1007\postgresql_config.yml'])
 
 def extract_from_csv():
-    # Execute a extração dos dados do CSV usando Embulk 
+    # Execute a extração dos dados do CSV usando Embulk
     subprocess.run(['embulk', 'run', r'C:\Users\germana.a.queiroz\Challenge_1007\csv_config.yml'])
 
 def load_to_postgresql():
-    # Carregue os dados extraídos para o PostgreSQL usando Embulk 
+    # Carregue os dados extraídos para o PostgreSQL usando Embulk
     subprocess.run(['embulk', 'run', r'C:\Users\germana.a.queiroz\Challenge_1007\postgresql_load_config.yml'])
 
-with DAG('extract_load_pipeline', 
+with DAG('extract_load_pipeline',
          default_args=default_args,
          schedule=timedelta(days=1)) as dag:
 
@@ -48,3 +49,57 @@ with DAG('extract_load_pipeline',
 
     extract_from_postgresql_task >> load_to_postgresql_task
     extract_from_csv_task >> load_to_postgresql_task
+
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Mapped
+from airflow.utils.log.logging_mixin import LoggingMixin
+
+
+Base = declarative_base()
+
+class TaskInstance(Base):
+    __tablename__ = 'northwind'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+    # Exemplo de uso correto com Mapped[]
+    dag_model: Mapped[CodeType]  # Substitua ModelType pelo tipo correto esperado
+
+    def __repr__(self):
+        return f'<TaskInstance(id={self.id}, name={self.name})>'
+
+class TaskInstance(Base, LoggingMixin):
+    __allow_unmapped__ = True
+    # restante da classe
+
+class BaseTask(Base):
+    __tablename__ = 'northwind'
+    __abstract__=True
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+    def __repr__(self):
+        return f'<BaseTask(id={self.id}, name={self.name})>'
+
+class TaskInstance(BaseTask):
+    __tablename__ = 'northwind'  # Substitua pelo nome da tabela no seu banco de dados
+
+    additional_column = Column(String)
+
+    def __repr__(self):
+        return f'<TaskInstance(id={self.id}, name={self.name}, additional_column={self.additional_column})>'
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+
+# Configuração da conexão com o banco de dados
+SQLALCHEMY_DATABASE_URI = 'sqlite:////C:/Users/germana.a.queiroz/airflow/airflow.db'
+engine = create_engine(SQLALCHEMY_DATABASE_URI)
+Base.metadata.create_all(engine)
+
+Session = sessionmaker(bind=engine)
+session = Session()
+
