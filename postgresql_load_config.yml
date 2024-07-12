@@ -1,0 +1,13 @@
+---
+in:
+  type: file
+  path_prefix: C:\\Users\\germana.a.queiroz\\Challenge_1007\\
+    LH_ED_GERMANA_A_QUEIROZ\\data\\postregressql_orders_data.sql
+out:
+  type: postgresql
+  host: localhost
+  user: germana.a.queiroz
+  password: 1234
+  database: northwind
+  table: mytable
+

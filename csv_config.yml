@@ -1,0 +1,10 @@
+---
+in:
+  type: file
+  path: C:\\Users\\germana.a.queiroz\\Challenge_1007\\
+    LH_ED_GERMANA_A_QUEIROZ\\data\\order_details.csv
+out:
+  type: file
+  path_prefix: C:\\Users\\germana.a.queiroz\\Challenge_1007\\
+    LH_ED_GERMANA_A_QUEIROZ\\data\\csv_orders_data.csv
+  file_ext: csv
